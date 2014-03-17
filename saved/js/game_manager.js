@@ -6,12 +6,9 @@ function GameManager(size, InputManager, Actuator, ScoreManager) {
 
   this.startTiles   = 2;
 
-  this.saved = null;
-
   this.inputManager.on("move", this.move.bind(this));
   this.inputManager.on("restart", this.restart.bind(this));
   this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
-  this.inputManager.on("saveGame", this.saveGame.bind(this));
   this.inputManager.on("loadGame", this.loadGame.bind(this));
 
   this.setup();
@@ -29,39 +26,13 @@ GameManager.prototype.keepPlaying = function () {
   this.actuator.continue();
 };
 
-// Save the game
-GameManager.prototype.saveGame = function () {
-  var grid = this.grid.copy();
-  grid.eachCell(function (x, y, tile) {
-    if (tile) {
-      tile.previousPosition = null;
-      tile.mergedFrom = null;
-    }
-    grid.cells[x][y] = tile;
-  });
-  this.saved = {
-    'grid': grid,
-    'score': this.score,
-    'over': this.over,
-    'won': this.won,
-    'keepPlaying': this.keepPlaying
-  };
-  this.actuator.saveGame();
-};
-
-// Save the game
-GameManager.prototype.loadGame = function () {
-  if (!this.saved) return;
-  this.grid = new Grid(this.size);
-  this.score = this.saved.score,
-  this.over = this.saved.over,
-  this.won = this.saved.won;
-  this.keepPlaying = this.saved.keepPlaying;
-  this.actuator.continue();
-  this.actuate();
-
-  this.grid = this.saved.grid.copy(),
-  this.actuate();
+// Load game
+GameManager.prototype.loadGame = function (loadData) {
+  try {
+    this.fromJSON(atob(loadData.match(/{([^{}]*)}$/)[1]));
+  } catch (e) {
+    alert('Failed to load your saving, the file may be broken.');
+  }
 };
 
 GameManager.prototype.isGameTerminated = function () {
@@ -106,7 +77,9 @@ GameManager.prototype.addRandomTile = function () {
 };
 
 // Sends the updated grid to the actuator
-GameManager.prototype.actuate = function () {
+GameManager.prototype.actuate = function (isLoad) {
+  isLoad = isLoad || false;
+
   if (this.scoreManager.get() < this.score) {
     this.scoreManager.set(this.score);
   }
@@ -117,8 +90,9 @@ GameManager.prototype.actuate = function () {
     won:        this.won,
     bestScore:  this.scoreManager.get(),
     terminated: this.isGameTerminated()
-  });
+  }, isLoad);
 
+  this.actuator.updateSave(this);
 };
 
 // Save all tile positions and remove merger info
@@ -282,3 +256,27 @@ GameManager.prototype.tileMatchesAvailable = function () {
 GameManager.prototype.positionsEqual = function (first, second) {
   return first.x === second.x && first.y === second.y;
 };
+
+GameManager.prototype.saving = ['grid', 'score', 'over', 'won', 'keepPlaying'];
+
+GameManager.prototype.toJSON = function () {
+  var copy = {}, self = this;
+  this.saving.map(function (k) { copy[k] = self[k]; });
+  return copy;
+};
+
+GameManager.prototype.fromJSON = function (loadData) {
+  var self = this;
+  var temp = {};
+  var copy = JSON.parse(loadData);
+  this.saving.map(function (k) { temp[k] = copy[k]; });
+  temp.grid = new Grid(this.size);
+  copy.grid.forEach(function (value, pos) {
+    if (!value) return;
+    pos = { 'x': pos >> 2, 'y': pos & 3 };
+    temp.grid.cells[pos.x][pos.y] = new Tile(pos, value);
+  });
+  this.saving.map(function (k) { self[k] = temp[k]; });
+  this.actuate(true);
+}
+

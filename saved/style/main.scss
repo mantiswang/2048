@@ -107,6 +107,28 @@ h1.title {
   }
 }
 
+.save-load {
+  display: block;
+  .save-game, .load-game {
+    display: inline-block;
+    background: darken($game-container-background, 20%);
+    border-radius: 3px;
+    padding: 10px 20px;
+    text-decoration: none;
+    color: $bright-text-color;
+    height: 40px;
+    line-height: 42px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .load-game input {
+    width: 1px;
+    opacity: 0;
+  }
+}
+
 .score-container:after {
   content: "Score";
 }
@@ -515,34 +537,4 @@ hr {
       margin-top: 30px !important;
     }
   }
-}
-
-.saveload {
-  display: block;
-
-  .save-game, .load-game, .restart-game {
-    @include button;
-    $height: 32px;
-    padding: 15px 25px;
-    font-size: $height;
-    height: $height;
-    line-height: $height;
-    font-weight: bold;
-    color: white;
-    margin: 0 12px 0 0;
-    @include smaller($mobile-threshold) {
-      padding: 8px 12px;
-      $height: 20px;
-      font-size: $height;
-      height: $height;
-      line-height: $height;
-      margin: 0 8px 0 0;
-    }
-  }
-
-}
-
-
-.saved-game a {
-  cursor: default;
 }

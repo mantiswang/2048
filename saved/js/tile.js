@@ -16,6 +16,6 @@ Tile.prototype.updatePosition = function (position) {
   this.y = position.y;
 };
 
-Tile.prototype.copy = function () {
-  return new Tile(this, this.value);
-};
+Tile.prototype.toJSON = function () {
+  return this.value;
+}

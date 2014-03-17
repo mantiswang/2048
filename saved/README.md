@@ -1,4 +1,7 @@
-Yet another fork from https://github.com/gabrielecirulli/2048
+# 2048
+
+Yet another fork of [2048](https://github.com/gabrielecirulli/2048).
 
 Modify:
-* Added save / load (only works without page refresh)
+* You can save and load now. (NOT support mobile device)
+

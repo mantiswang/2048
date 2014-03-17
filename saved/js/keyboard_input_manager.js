@@ -61,17 +61,16 @@ KeyboardInputManager.prototype.listen = function () {
   keepPlaying.addEventListener("click", this.keepPlaying.bind(this));
   keepPlaying.addEventListener("touchend", this.keepPlaying.bind(this));
 
-  var loadGame = document.querySelector(".load-game");
-  loadGame.addEventListener("click", this.loadGame.bind(this));
-  loadGame.addEventListener("touchend", this.loadGame.bind(this));
-
-  var saveGame = document.querySelector(".save-game");
-  saveGame.addEventListener("click", this.saveGame.bind(this));
-  saveGame.addEventListener("touchend", this.saveGame.bind(this));
-
-  var restartGame = document.querySelector(".restart-game");
-  restartGame.addEventListener("click", this.restart.bind(this));
-  restartGame.addEventListener("touchend", this.restart.bind(this));
+  var loadGameFile = document.querySelector(".load-game-file");
+  loadGameFile.addEventListener('change', function (e) {
+    var reader = new FileReader();
+    var file = loadGameFile.files[0];
+    reader.addEventListener('load', function () {
+      self.loadGame.apply(self, [reader.result]);
+    });
+    if (file) reader.readAsText(file);
+    loadGameFile.value = '';
+  });
 
   // Listen to swipe events
   var touchStartClientX, touchStartClientY;
@@ -115,12 +114,6 @@ KeyboardInputManager.prototype.keepPlaying = function (event) {
   this.emit("keepPlaying");
 };
 
-KeyboardInputManager.prototype.loadGame = function (event) {
-  event.preventDefault();
-  this.emit("loadGame");
-};
-
-KeyboardInputManager.prototype.saveGame = function (event) {
-  event.preventDefault();
-  this.emit("saveGame");
-};
+KeyboardInputManager.prototype.loadGame = function (loadData) {
+  this.emit("loadGame", loadData);
+}
