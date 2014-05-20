@@ -31,37 +31,365 @@
     <!-- MAIN CONTENT -->
     <div id="main_content_wrap" class="outer">
       <section id="main_content" class="inner">
-        <h3>
-<a name="welcome-to-github-pages" class="anchor" href="#welcome-to-github-pages"><span class="octicon octicon-link"></span></a>Welcome to GitHub Pages.</h3>
+        <p>&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "<a href="http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd%22%3E">http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;</a>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+</p>
+    
+        body{margin:0;padding:0;overflow: hidden;}
+        .city{width:100%;position:fixed;bottom: 0px;z-index: 100;}
+        .city img{width: 100%;}
+    html5Ò¹¾°·ÅÑÌ»¨ÕÀ·Å¶¯»­Ð§¹û - Õ¾³¤ËØ²Ä<div>
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+    ä¯ÀÀÆ÷²»Ö§³Öcanvas<div><img src="img/city.png" alt=""></div>
+    <img src="img/moon.png" alt=""><div>
+        <div>ÐÂÄê¿ìÀÖ</div>
+        <div>ºÏ¼ÒÐÒ¸£</div>
+        <div>ÍòÊÂÈçÒâ</div>
+        <div>ÐÄÏëÊÂ³É</div>
+        <div>²ÆÔ´¹ã½ø</div>
+    </div>
+    
+</div>
+    
+
+<pre><code>&lt;script&gt;
+    var canvas = document.getElementById("cas");
+    var ocas = document.createElement("canvas");
+    var octx = ocas.getContext("2d");
+    var ctx = canvas.getContext("2d");
+    ocas.width = canvas.width = window.innerWidth;
+    ocas.height = canvas.height = 700;
+    var bigbooms = [];
+
+    window.onload = function(){
+        initAnimate()
+    }
+
+    function initAnimate(){
+        drawBg();
+
+        lastTime = new Date();
+        animate();
+    }
+
+    var lastTime;
+    function animate(){
+        ctx.save();
+        ctx.fillStyle = "rgba(0,5,24,0.1)";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.restore();
+
+
+        var newTime = new Date();
+        if(newTime-lastTime&gt;500+(window.innerHeight-767)/2){
+            var random = Math.random()*100&gt;2?true:false;
+            var x = getRandom(canvas.width/5 , canvas.width*4/5);
+            var y = getRandom(50 , 200);
+            if(random){
+                var bigboom = new Boom(getRandom(canvas.width/3,canvas.width*2/3) ,2,"#FFF" , {x:x , y:y});
+                bigbooms.push(bigboom)
+            }
+            else {
+                var bigboom = new Boom(getRandom(canvas.width/3,canvas.width*2/3) ,2,"#FFF" , {x:canvas.width/2 , y:200} , document.querySelectorAll(".shape")[parseInt(getRandom(0, document.querySelectorAll(".shape").length))]);
+                bigbooms.push(bigboom)
+            }
+            lastTime = newTime;
+            console.log(bigbooms)
+        }
+
+        stars.foreach(function(){
+            this.paint();
+        })
+
+        drawMoon();
+
+        bigbooms.foreach(function(index){
+            var that = this;
+            if(!this.dead){
+                this._move();
+                this._drawLight();
+            }
+            else{
+                this.booms.foreach(function(index){
+                    if(!this.dead) {
+                        this.moveTo(index);
+                    }
+                    else if(index === that.booms.length-1){
+                        bigbooms[bigbooms.indexOf(that)] = null;
+                    }
+                })
+            }
+        });
+
+        raf(animate);
+    }
+
+    function drawMoon(){
+        var moon = document.getElementById("moon");
+        var centerX = canvas.width-200 , centerY = 100 , width = 80;
+        if(moon.complete){
+            ctx.drawImage(moon , centerX , centerY , width , width )
+        }
+        else {
+            moon.onload = function(){
+                ctx.drawImage(moon ,centerX , centerY , width , width)
+            }
+        }
+        var index = 0;
+        for(var i=0;i&lt;10;i++){
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(centerX+width/2 , centerY+width/2 , width/2+index , 0 , 2*Math.PI);
+            ctx.fillStyle="rgba(240,219,120,0.005)";
+            index+=2;
+            ctx.fill();
+            ctx.restore();
+        }
+
+    }
+
+    Array.prototype.foreach = function(callback){
+        for(var i=0;i&lt;this.length;i++){
+            if(this[i]!==null) callback.apply(this[i] , [i])
+        }
+    }
+
+    var raf = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) { window.setTimeout(callback, 1000 / 60); };
+
+    canvas.onclick = function(){
+        var x = event.clientX;
+        var y = event.clientY;
+        var bigboom = new Boom(getRandom(canvas.width/3,canvas.width*2/3) ,2,"#FFF" , {x:x , y:y});
+        bigbooms.push(bigboom)
+    }
+
+    // canvas.addEventLisener("touchstart" , function(event){
+    //  var touch = event.targetTouches[0];
+    //  var x = event.pageX;
+    //  var y = event.pageY;
+    //  var bigboom = new Boom(getRandom(canvas.width/3,canvas.width*2/3) ,2,"#FFF" , {x:x , y:y});
+    //  bigbooms.push(bigboom)
+    // })
+
+    var Boom = function(x,r,c,boomArea,shape){
+        this.booms = [];
+        this.x = x;
+        this.y = (canvas.height+r);
+        this.r = r;
+        this.c = c;
+        this.shape = shape || false;
+        this.boomArea = boomArea;
+        this.theta = 0;
+        this.dead = false;
+        this.ba = parseInt(getRandom(80 , 200));
+    }
+    Boom.prototype = {
+        _paint:function(){
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(this.x,this.y,this.r,0,2*Math.PI);
+            ctx.fillStyle = this.c;
+            ctx.fill();
+            ctx.restore();
+        },
+        _move:function(){
+            var dx = this.boomArea.x - this.x , dy = this.boomArea.y - this.y;
+            this.x = this.x+dx*0.01;
+            this.y = this.y+dy*0.01;
+
+            if(Math.abs(dx)&lt;=this.ba &amp;&amp; Math.abs(dy)&lt;=this.ba){
+                if(this.shape){
+                    this._shapBoom();
+                }
+                else this._boom();
+                this.dead = true;
+            }
+            else {
+                this._paint();
+            }
+        },
+        _drawLight:function(){
+            ctx.save();
+            ctx.fillStyle = "rgba(255,228,150,0.3)";
+            ctx.beginPath();
+            ctx.arc(this.x , this.y , this.r+3*Math.random()+1 , 0 , 2*Math.PI);
+            ctx.fill();
+            ctx.restore();
+        },
+        _boom:function(){
+            var fragNum = getRandom(30 , 200);
+            var style = getRandom(0,10)&gt;=5? 1 : 2;
+            var color;
+            if(style===1){
+                color = {
+                    a:parseInt(getRandom(128,255)),
+                    b:parseInt(getRandom(128,255)),
+                    c:parseInt(getRandom(128,255))
+                }
+            }
+
+            var fanwei = parseInt(getRandom(300, 400));
+            for(var i=0;i&lt;fragNum;i++){
+                if(style===2){
+                    color = {
+                        a:parseInt(getRandom(128,255)),
+                        b:parseInt(getRandom(128,255)),
+                        c:parseInt(getRandom(128,255))
+                    }
+                }
+                var a = getRandom(-Math.PI, Math.PI);
+                var x = getRandom(0, fanwei) * Math.cos(a) + this.x;
+                var y = getRandom(0, fanwei) * Math.sin(a) + this.y; 
+                var radius = getRandom(0 , 2)
+                var frag = new Frag(this.x , this.y , radius , color , x , y );
+                this.booms.push(frag);
+            }
+        },
+        _shapBoom:function(){
+            var that = this;
+            putValue(ocas , octx , this.shape , 5, function(dots){
+                var dx = canvas.width/2-that.x;
+                var dy = canvas.height/2-that.y;
+                for(var i=0;i&lt;dots.length;i++){
+                    color = {a:dots[i].a,b:dots[i].b,c:dots[i].c}
+                    var x = dots[i].x;
+                    var y = dots[i].y;
+                    var radius = 1;
+                    var frag = new Frag(that.x , that.y , radius , color , x-dx , y-dy);
+                    that.booms.push(frag);
+                }
+            })
+        }
+    }
+
+    function putValue(canvas , context , ele , dr , callback){
+        context.clearRect(0,0,canvas.width,canvas.height);
+        var img = new Image();
+        if(ele.innerHTML.indexOf("img")&gt;=0){
+            img.src = ele.getElementsByTagName("img")[0].src;
+            imgload(img , function(){
+                context.drawImage(img , canvas.width/2 - img.width/2 , canvas.height/2 - img.width/2);
+                dots = getimgData(canvas , context , dr);
+                callback(dots);
+            })
+        }
+        else {
+            var text = ele.innerHTML;
+            context.save();
+            var fontSize =200;
+            context.font = fontSize+"px ËÎÌå bold";
+            context.textAlign = "center";
+            context.textBaseline = "middle";
+            context.fillStyle = "rgba("+parseInt(getRandom(128,255))+","+parseInt(getRandom(128,255))+","+parseInt(getRandom(128,255))+" , 1)";
+            context.fillText(text , canvas.width/2 , canvas.height/2);
+            context.restore();
+            dots = getimgData(canvas , context , dr);
+            callback(dots);
+        }
+    }
+
+    function imgload(img , callback){
+        if(img.complete){
+            callback.call(img);
+        }
+        else {
+            img.onload = function(){
+                callback.call(this);
+            }
+        }
+    }
+
+    function getimgData(canvas , context , dr){
+        var imgData = context.getImageData(0,0,canvas.width , canvas.height);
+        context.clearRect(0,0,canvas.width , canvas.height);
+        var dots = [];
+        for(var x=0;x&lt;imgData.width;x+=dr){
+            for(var y=0;y&lt;imgData.height;y+=dr){
+                var i = (y*imgData.width + x)*4;
+                if(imgData.data[i+3] &gt; 128){
+                    var dot = {x:x , y:y , a:imgData.data[i] , b:imgData.data[i+1] , c:imgData.data[i+2]};
+                    dots.push(dot);
+                }
+            }
+        }
+        return dots;
+    }
+
+    function getRandom(a , b){
+        return Math.random()*(b-a)+a;
+    }
+
+
+    var maxRadius = 1 , stars=[];
+    function drawBg(){
+        for(var i=0;i&lt;100;i++){
+            var r = Math.random()*maxRadius;
+            var x = Math.random()*canvas.width;
+            var y = Math.random()*2*canvas.height - canvas.height;
+            var star = new Star(x , y , r);
+            stars.push(star);
+            star.paint()
+        }
+
+    }
+
+    var Star = function(x,y,r){
+        this.x = x;this.y=y;this.r=r;
+    }
+    Star.prototype = {
+        paint:function(){
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(this.x , this.y , this.r , 0 , 2*Math.PI);
+            ctx.fillStyle = "rgba(255,255,255,"+this.r+")";
+            ctx.fill();
+            ctx.restore();
+        }
+    }
+
+    var focallength = 250;
+    var Frag = function(centerX , centerY , radius , color ,tx , ty){
+        this.tx = tx;
+        this.ty = ty;
+        this.x = centerX;
+        this.y = centerY;
+        this.dead = false;
+        this.centerX = centerX;
+        this.centerY = centerY;
+        this.radius = radius;
+        this.color = color;
+    }
+
+    Frag.prototype = {
+        paint:function(){
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(this.x , this.y , this.radius , 0 , 2*Math.PI);
+            ctx.fillStyle = "rgba("+this.color.a+","+this.color.b+","+this.color.c+",1)";
+            ctx.fill()
+            ctx.restore();
+        },
+        moveTo:function(index){
+            this.ty = this.ty+0.3;
+            var dx = this.tx - this.x , dy = this.ty - this.y;
+            this.x = Math.abs(dx)&lt;0.1 ? this.tx : (this.x+dx*0.1);
+            this.y = Math.abs(dy)&lt;0.1 ? this.ty : (this.y+dy*0.1);
+            if(dx===0 &amp;&amp; Math.abs(dy)&lt;=80){
+                this.dead = true;
+            }
+            this.paint();
+        }
+    }
+&lt;/script&gt;
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<div>
+<p>ÊÊÓÃä¯ÀÀÆ÷£º360¡¢FireFox¡¢Chrome¡¢Safari¡¢Opera¡¢°ÁÓÎ¡¢ËÑ¹·¡¢ÊÀ½çÖ®´°. ²»Ö§³ÖIE8¼°ÒÔÏÂä¯ÀÀÆ÷¡£</p>
+<p>À´Ô´£º<a href="http://sc.chinaz.com/" target="_blank">Õ¾³¤ËØ²Ä</a></p>
+</div>
 
-<h3>
-<a name="designer-templates" class="anchor" href="#designer-templates"><span class="octicon octicon-link"></span></a>Designer Templates</h3>
-
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
-
-<h3>
-<a name="rather-drive-stick" class="anchor" href="#rather-drive-stick"><span class="octicon octicon-link"></span></a>Rather Drive Stick?</h3>
-
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
-
-<h3>
-<a name="authors-and-contributors" class="anchor" href="#authors-and-contributors"><span class="octicon octicon-link"></span></a>Authors and Contributors</h3>
-
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
-
-<h3>
-<a name="support-or-contact" class="anchor" href="#support-or-contact"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
-
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
+<p>
+</p>
       </section>
     </div>
 
